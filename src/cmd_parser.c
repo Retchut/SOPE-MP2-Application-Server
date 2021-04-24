@@ -9,7 +9,7 @@ void printUsage(const char *programName) {
 }
 
 int cmdParser(int argc, char * const argv[], int *nsecs, char **fifoname) {
-  if (argc != 3) {
+  if (argc != 3 && argc != 4) {
     fprintf(stderr, "Incorrect number of arguments\n");
     printUsage(argv[0]);
     return 1;
