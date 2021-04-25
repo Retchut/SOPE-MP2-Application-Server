@@ -1,3 +1,6 @@
+#include "fifo.h"
+#include "common.h" //message
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -10,12 +13,6 @@
 #include <pthread.h>
 #include <time.h>
 
-#include <common.h> //incluir message
-
-//retorna 0 se tudo correu bem
-//retornan 1 em caso de falha na abertura de file
-//retorna 2 em erro de leitura ou escrita
-//retorna 3 caso server seja fechado
 int fifo(int id, int load, char* fifoname) {
 	time_t t;
 		
@@ -34,8 +31,6 @@ int fifo(int id, int load, char* fifoname) {
 		return 1;
 	}
 
-	printf("(client)  FIFO OPENED\n");
-
 	//podem surgir race conditions visto que o fifo é público e pode ser acedido por todas as threads
 	pthread_mutex_lock(&lock);
 	if (write(fd, &message, sizeof(Message)) == -1) {
@@ -43,8 +38,6 @@ int fifo(int id, int load, char* fifoname) {
 		return 2;
 	}
 	pthread_mutex_unlock(&lock);
-
-	printf("(client)  FIFO WRITTEN\n");
 
 	time(&t);
 	printf("%s ; %d ; %d ; %d;  %ld; %d; IWANT\n", ctime(&t), message.rid, message.tskload, message.pid, message.tid, message.tskres);
@@ -66,23 +59,17 @@ int fifo(int id, int load, char* fifoname) {
 		}
 	}
 
-	printf("(client) PRIVATE FIFO CREATED\n");
-
 	int fd2 = open(privatefifoname, O_RDONLY);
 	if (fd2 == -1) {
 		printf("open error %d\n",errno);
 		return 1;
 	}
 
-	printf("(client) PRIVATE FIFO OPENED\n");
-
 	int result;
 	if (read(fd2, &message, sizeof(Message)) == -1) {
 		printf("read error %d\n",errno);
 		return 2;
 	}
-
-	printf("(client) PRIVATE FIFO READ\n");
 
 	close(fd2);
 
@@ -95,13 +82,9 @@ int fifo(int id, int load, char* fifoname) {
 		return 3;
 	}
 
-	printf("(client) RESULT IS %d\n",message.tskres);
-
 	if(remove(privatefifoname)!=0){
 		printf("Private FIFO wasn't removed!\n");
 	}
-	
-	printf("(client) PRIVATE FIFO removed\n");
 
 	return 0;
 }
