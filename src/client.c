@@ -18,8 +18,8 @@ void create_thread(int nsecs, char *fifoname, int *seq_i) {
 
 // retornar tempo que já passou, desde o início do progrma, comparando assim com nsecs dado no início
 //usar clock_gettime com como parâmetro end_time antes de chamar esta função, para obter tempo actual e assim comparar com o tempo de ínicio
-int (struct timespec start_time, struct timespec end_time) {
-
+int past_time (struct timespec &start_time, struct timespec end_time) {
+   clock_gettime(CLOCK_REALTIME, &end_time); 
    accum_time = ((end_time.tv_sec - start_time.tv_sec) + (end_time.tv_nsec - start_time.tv_nsec ) )/ 1000000000.0;
 
    return accum_time;
@@ -31,11 +31,37 @@ int (struct timespec start_time, struct timespec end_time) {
 
 int main(int argc, char* const argv[]){
     int nsecs;
+    int i = 1;
     char* fifoname;
-
+    
+    struct timespec start_time;
+    struct timespec end_time;
+  
+  
+  
     if (cmdParser(argc, argv, &nsecs, &fifoname) != 0){
         return 1;
     }
+    
+  
+  
+    //Testar clock
+    if(clock_gettime( CLOCK_REALTIME, &start) == -1 ) {
+      perror( "clock gettime" );
+      exit( EXIT_FAILURE );
+    }
+  
+  
+    //Fiz isto agora-FLávio 
+    accum_time = past_time(start_time, end_time);// tempo que passou desde o instante inicial start_time
+     //Fiz isto agora-FLávio 
+    while(accum_time < nsecs){
+      create_threads(nsecs, fifoname, &i); //criar threads ,cada uma com identificação individual i
+      
+      acumm_time = past_time(start_time,end_time);
+      i++:  
+    }
+  
 
     printf("nsecs = %d, fifoname = %s\n", nsecs, fifoname);
     return 0;
