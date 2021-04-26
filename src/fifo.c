@@ -14,31 +14,41 @@
 #include <time.h>
 
 int fifo(int id, int load, char* fifoname) {
-	time_t t;
-		
+	//time_t t;
+
+	/*	
 	Message message;
 	message.rid = id;
 	message.tskload = load;
 	message.pid = getpid();
 	message.tid = pthread_self();
 	message.tskres = -1;
-
+	*/
+	/* No need for this
 	pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER; // Ze: Precisa de ser global e acho que deveria ser uma cond variable, para avisar outras threads a espera
+	*/
 	
+	/*
+	int fd = open(fifoname, O_WRONLY);
+	if (fd == -1) {
+		return 1;
+	}*/
+
 	// podem surgir race conditions visto que o fifo é público e pode ser acedido por todas as threads
 	// Ze: Acho que aqui, mais uma vezes deveria ter cond variable
-	pthread_mutex_lock(&lock);
+	/*pthread_mutex_lock(&lock);
 	if (write(fd, &message, sizeof(Message)) == -1) {
 		printf("write error %d\n",errno);
 		return 2;
 	}
-	pthread_mutex_unlock(&lock);
+	pthread_mutex_unlock(&lock);*/
 
 	// Ze: Como estamos a ver o tempo? Posix timers?
-	time(&t);
-	printf("%s ; %d ; %d ; %d;  %ld; %d; IWANT\n", ctime(&t), message.rid, message.tskload, message.pid, message.tid, message.tskres);
-	close(fd);
+	// time(&t); Unused
+	//printf("%s ; %d ; %d ; %d;  %ld; %d; IWANT\n", ctime(&t), message.rid, message.tskload, message.pid, message.tid, message.tskres);
+	//close(fd); We cant close the fd
 
+	/*
 	char privatefifoname[1000] = "/tmp/";
 	char pidstr[1000];
 	char tidstr[1000];
@@ -60,7 +70,8 @@ int fifo(int id, int load, char* fifoname) {
 		printf("open error %d\n",errno);
 		return 1;
 	}
-
+	*/
+	
 	int result;
 	if (read(fd2, &message, sizeof(Message)) == -1) {
 		printf("read error %d\n",errno);
