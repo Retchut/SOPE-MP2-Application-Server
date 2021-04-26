@@ -73,7 +73,6 @@ int main(int argc, char *const argv[]) {
       break;
     //----------------------------
   }
-
   
 
   // Destruir o setup das detached threads
