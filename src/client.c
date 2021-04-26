@@ -34,9 +34,7 @@ int main(int argc, char* const argv[]){
     int i = 1;
     char* fifoname;
     
-    struct timespec start_time;
-    struct timespec end_time;
-  
+   
   
   
     if (cmdParser(argc, argv, &nsecs, &fifoname) != 0){
