@@ -6,7 +6,7 @@
 #include <time.h>   //clock functs
 #include <sys/types.h>  //CLOCK_REALTIME
 
-#include "utils.h"
+#include "timer.h"
 #include "cmd_parser.h"
 
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;

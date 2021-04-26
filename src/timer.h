@@ -1,5 +1,5 @@
-#ifndef SRC_UTILS_H_
-#define SRC_UTILS_H_
+#ifndef SRC_TIMER_H_
+#define SRC_TIMER_H_
 
 /**
  * @brief Records the time the program started in in a global variable
@@ -20,4 +20,4 @@ long int get_elapsed();
  */
 long int get_time();
 
-#endif /* SRC_UTILS_H_ */
+#endif /* SRC_TIMER_H_ */
