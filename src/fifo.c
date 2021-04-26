@@ -23,15 +23,17 @@ int fifo(int id, int load, char* fifoname) {
 	message.tid = pthread_self();
 	message.tskres = -1;
 
-	pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+	pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER; // Ze: Precisa de ser global e acho que deveria ser uma cond variable, para avisar outras threads a espera
 	
-	//esperar que o fifo seja criado antes de tentar abrir
+	// esperar que o fifo seja criado antes de tentar abrir 
+	// Ze: Acho que o fifo deve ser aberto na main thread, aqui não ha que esperar nada, isto nao deve ser lancado se nao houver fifo aberta
 	int fd = open(fifoname, O_WRONLY);
 	if (fd == -1) {
 		return 1;
 	}
 
-	//podem surgir race conditions visto que o fifo é público e pode ser acedido por todas as threads
+	// podem surgir race conditions visto que o fifo é público e pode ser acedido por todas as threads
+	// Ze: Acho que aqui, mais uma vezes deveria ter cond variable
 	pthread_mutex_lock(&lock);
 	if (write(fd, &message, sizeof(Message)) == -1) {
 		printf("write error %d\n",errno);
@@ -39,6 +41,7 @@ int fifo(int id, int load, char* fifoname) {
 	}
 	pthread_mutex_unlock(&lock);
 
+	// Ze: Como estamos a ver o tempo? Posix timers?
 	time(&t);
 	printf("%s ; %d ; %d ; %d;  %ld; %d; IWANT\n", ctime(&t), message.rid, message.tskload, message.pid, message.tid, message.tskres);
 	close(fd);
