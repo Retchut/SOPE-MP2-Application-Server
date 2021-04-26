@@ -1,3 +1,6 @@
+#ifndef SRC_FIFO_H_
+#define SRC_FIFO_H_
+
 /**
 * @brief establishes the communication between the client and the server through FIFOs
 * @param id task id
@@ -6,3 +9,5 @@
 * @return 0 on success, 1 in file related error, 2 on reading  or writing error, 3 on closed server
 */
 int fifo(int id, int load, char* fifoname);
+
+#endif /* SRC_FIFO_H_ */
