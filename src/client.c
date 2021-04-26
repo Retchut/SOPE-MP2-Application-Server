@@ -15,16 +15,20 @@ int current_thread = 0; // identificador da thread atual
 
 void *thread_processing(void *ptr) {
 
-  //increment id
   pthread_mutex_lock(&lock);
-  int id = current_thread;
+  //get current thread's id
+  int i = current_thread;
+  //increment id to identify the next thread
   current_thread++;
   pthread_mutex_unlock(&lock);
 
-  int task = rand() % 9 + 1;
+  int t = rand() % 9 + 1;
+  pid_t pid = getpid();
+  pthread_t tid = pthread_self();
+  int res = -1;
   // testing waiting for threads (main operation, mudar mais tarde)
   sleep(1);
-  printf("Thread %d: task %d\n", id, task);
+  printf("Thread %d: task %d\n", i, t);
   //--------------------------
   return NULL;
 }
