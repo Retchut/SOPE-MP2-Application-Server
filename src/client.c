@@ -1,21 +1,20 @@
 // COPYRIGHT 2021 Flávio Lobo Vaz, José Costa, Mário Travassos, Tomás Fidalgo
 
-#include <asm-generic/errno-base.h>
 #include <errno.h>   // perror()
 #include <fcntl.h>   // open()
-#include <pthread.h> // thread functions
-#include <stdbool.h> // bool
+#include <pthread.h>  // thread functions
+#include <stdbool.h>  // bool
 #include <stdio.h>
-#include <stdlib.h>      // rand()
+#include <stdlib.h>      // rand() atexit()
 #include <string.h>      // snprintf() strcat()
-#include <sys/inotify.h> // inotify funcs
+#include <sys/inotify.h>  // inotify funcs
 #include <sys/stat.h>    // open() mkfifo()
 #include <sys/types.h>   // CLOCK_REALTIME mkfifo()
 #include <time.h>        // clock functs
 #include <unistd.h>      // usleep()
 
 #include "./cmd_parser.h"
-#include "./common.h" // message
+#include "./common.h"  // message
 #include "./timer.h"
 
 #define FIFONAME_LEN 1000
@@ -66,9 +65,6 @@ void cThreadFunc(void *taskId) {
   timeout.tv_sec = getRemaining();
   timeout.tv_usec = 0;
 
-  printf("%ld ; %d ; %d ; %d ; %ld ; %d ; IWANT\n", getTime(), message.rid,
-         message.tskload, message.pid, message.tid, message.tskres);
-
   if (write(pubFifoFD, &message, sizeof(Message)) == -1) {
     perror("Error writing to public fifo");
     if (close(privFifoFD) == -1) {
@@ -80,10 +76,10 @@ void cThreadFunc(void *taskId) {
     pthread_exit(0);
   }
 
-  printf("%ld ; %d ; %d ; %d;  %ld; %d; IWANT\n", getTime(), message.rid,
+  printf("%ld ; %d ; %d ; %d ; %ld ; %d ; IWANT\n", getTime(), message.rid,
          message.tskload, message.pid, message.tid, message.tskres);
 
-  //wait for response
+  // wait for response
   dataReady = select(privFifoFD + 1, &rfds, NULL, NULL, &timeout);
 
   if (dataReady == -1) {
@@ -98,9 +94,7 @@ void cThreadFunc(void *taskId) {
   } else if (dataReady == 0) {
     printf("%ld ; %d ; %d ; %d ; %ld ; %d ; GAVUP\n", getTime(), message.rid,
            message.tskload, message.pid, message.tid, message.tskres);
-    //mauro: ao dar timeout
-    //penso que devíamos parar esta thread, e todas as outras
-    //ou seja, verificar se getRemaining() > 0 no início das threads, maybe?
+
   } else {
     if (read(privFifoFD, &recvdMessage, sizeof(Message)) == -1) {
       perror("Error reading priv fifo");
@@ -113,13 +107,12 @@ void cThreadFunc(void *taskId) {
       pthread_exit(0);
     }
 
-    //parse response
+    // parse response
     if (recvdMessage.tskres == -1) {
       printf("%ld ; %d ; %d ; %d ; %ld ; %d ; CLOSD\n", getTime(),
              recvdMessage.rid, recvdMessage.tskload, recvdMessage.pid,
              recvdMessage.tid, recvdMessage.tskres);
-      serverOpen = false; // Possible race cond, but no problem
-                          // because variable is to be set false
+      serverOpen = false;
     } else {
       printf("%ld ; %d ; %d ; %d ; %ld ; %d ; GOTRS\n", getTime(),
              recvdMessage.rid, recvdMessage.tskload, recvdMessage.pid,
@@ -133,6 +126,12 @@ void cThreadFunc(void *taskId) {
     perror("Error unlinking private fifo");
   }
   pthread_exit(0);
+}
+
+void closePubFifo(void) {
+  if (close(pubFifoFD) == -1) {
+    perror("Error closing public fifo");
+  }
 }
 
 int main(int argc, char *const argv[]) {
@@ -166,18 +165,20 @@ int main(int argc, char *const argv[]) {
   while (getRemaining() > 0 && pubFifoFD == -1) {
     pubFifoFD = open(fifoname, O_WRONLY);
     if (pubFifoFD == -1) {
-      if (errno != EACCES) {
+      if (errno != EACCES && errno != ENOENT) {
         perror("Error opening public fifo");
         exit(EXIT_FAILURE);
       }
     }
   }
 
+  atexit(&closePubFifo);
+
   while (getRemaining() > 0 && serverOpen) {  // Time remaining
     // Pseudo random interval between thread creation
     int rand_numb =
-        ((rand() % 1000) * 1000);  // random milissecond number, from 0 ms to 1
-                                  // sec Ze: maybe from 10 ms to 1 sec
+        ((rand() % 1000) * 1000);
+        // random milissecond number, from 0 ms to 1
     if (usleep(rand_numb) == -1) {
       perror("Error usleep");
       exit(EXIT_FAILURE);
@@ -193,8 +194,6 @@ int main(int argc, char *const argv[]) {
 
   // Destroy detached threads setup
   pthread_attr_destroy(&detatched);
-
-  //TODO: falta dar close do fifo público
 
   pthread_exit(0);
 }
