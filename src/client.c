@@ -1,19 +1,22 @@
+// COPYRIGHT 2021 Flávio Lobo Vaz, José Costa, Mário Travassos, Tomás Fidalgo
+
+#include <asm-generic/errno-base.h>
 #include <errno.h>   // perror()
 #include <fcntl.h>   // open()
-#include <pthread.h> //thread functions
-#include <pthread.h>
-#include <stdbool.h> //bool
+#include <pthread.h> // thread functions
+#include <stdbool.h> // bool
 #include <stdio.h>
-#include <stdlib.h>    //rand()
-#include <string.h>    // snprintf() strcat()
-#include <sys/stat.h>  // open() mkfifo()
-#include <sys/types.h> // CLOCK_REALTIME mkfifo()
-#include <time.h>      //clock functs
-#include <unistd.h>    //usleep()
+#include <stdlib.h>      // rand()
+#include <string.h>      // snprintf() strcat()
+#include <sys/inotify.h> // inotify funcs
+#include <sys/stat.h>    // open() mkfifo()
+#include <sys/types.h>   // CLOCK_REALTIME mkfifo()
+#include <time.h>        // clock functs
+#include <unistd.h>      // usleep()
 
-#include "cmd_parser.h"
-#include "common.h" //message
-#include "timer.h"
+#include "./cmd_parser.h"
+#include "./common.h" // message
+#include "./timer.h"
 
 #define FIFONAME_LEN 1000
 
@@ -26,7 +29,7 @@ void cThreadFunc(void *taskId) {
 
   // Set message struct
   Message message, recvdMessage;
-  message.rid = *(int*)(taskId);
+  message.rid = *(int *)(taskId);
   message.tskload = load;
   message.pid = getpid();
   message.tid = pthread_self();
@@ -35,16 +38,15 @@ void cThreadFunc(void *taskId) {
   // Assemble fifoname
   char privFifoName[FIFONAME_LEN];
   snprintf(privFifoName, FIFONAME_LEN, "/tmp/%d.%ld", message.pid, message.tid);
-  
+
   // Create fifo
   if (mkfifo(privFifoName, 0777) == -1) {
-    if (errno != EEXIST){
+    if (errno != EEXIST) {
       perror("Error creating private Fifo");
       pthread_exit(0);
     }
   }
 
-  
   // Open private fifo
   int privFifoFD = open(privFifoName, O_RDONLY | O_NONBLOCK);
   if (privFifoFD == -1) {
@@ -64,7 +66,9 @@ void cThreadFunc(void *taskId) {
   timeout.tv_sec = getRemaining();
   timeout.tv_usec = 0;
 
-  //make request
+  printf("%ld ; %d ; %d ; %d ; %ld ; %d ; IWANT\n", getTime(), message.rid,
+         message.tskload, message.pid, message.tid, message.tskres);
+
   if (write(pubFifoFD, &message, sizeof(Message)) == -1) {
     perror("Error writing to public fifo");
     if (close(privFifoFD) == -1) {
@@ -114,7 +118,8 @@ void cThreadFunc(void *taskId) {
       printf("%ld ; %d ; %d ; %d ; %ld ; %d ; CLOSD\n", getTime(),
              recvdMessage.rid, recvdMessage.tskload, recvdMessage.pid,
              recvdMessage.tid, recvdMessage.tskres);
-      serverOpen = false; // Possible race cond
+      serverOpen = false; // Possible race cond, but no problem
+                          // because variable is to be set false
     } else {
       printf("%ld ; %d ; %d ; %d ; %ld ; %d ; GOTRS\n", getTime(),
              recvdMessage.rid, recvdMessage.tskload, recvdMessage.pid,
@@ -134,13 +139,6 @@ int main(int argc, char *const argv[]) {
   int nsecs;
   char *fifoname;
   if (cmdParser(argc, argv, &nsecs, &fifoname) != 0) {
-    exit(EXIT_FAILURE);
-  }
-
-  // Open public fifo
-  pubFifoFD = open(fifoname, O_WRONLY);
-  if (pubFifoFD == -1) {
-    perror("Error opening public fifo");
     exit(EXIT_FAILURE);
   }
 
@@ -164,15 +162,28 @@ int main(int argc, char *const argv[]) {
   // set start time in time.c
   setTimer(nsecs);
 
-  while (getRemaining() > 0 && serverOpen) { // Time remaining
+  // Open public fifo
+  while (getRemaining() > 0 && pubFifoFD == -1) {
+    pubFifoFD = open(fifoname, O_WRONLY);
+    if (pubFifoFD == -1) {
+      if (errno != EACCES) {
+        perror("Error opening public fifo");
+        exit(EXIT_FAILURE);
+      }
+    }
+  }
+
+  while (getRemaining() > 0 && serverOpen) {  // Time remaining
     // Pseudo random interval between thread creation
     int rand_numb =
-        (((rand() % 990) + 10) * 1000) ; // random milissecond number, from 10 ms to 999 ms
+        ((rand() % 1000) * 1000);  // random milissecond number, from 0 ms to 1
+                                  // sec Ze: maybe from 10 ms to 1 sec
     if (usleep(rand_numb) == -1) {
       perror("Error usleep");
       exit(EXIT_FAILURE);
     }
-    if (pthread_create(&tid, &detatched, (void*)&cThreadFunc, (void*)&taskId) != 0) {
+    if (pthread_create(&tid, &detatched, (void *)&cThreadFunc,
+                       (void *)&taskId) != 0) {
       perror("Error creating threads");
       exit(EXIT_FAILURE);
     }
@@ -180,7 +191,7 @@ int main(int argc, char *const argv[]) {
     taskId++;
   }
 
-  // Destroy detached threads setup 
+  // Destroy detached threads setup
   pthread_attr_destroy(&detatched);
 
   //TODO: falta dar close do fifo público
