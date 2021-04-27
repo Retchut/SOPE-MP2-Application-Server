@@ -3,15 +3,24 @@
 #include <time.h>
 
 long int start;
+long int end;
 
-long int get_time(){
+long int getTime(){
     return time(NULL);
 }
 
-void set_start(){
+void setTimer(int duration){
     start = time(NULL);
+    end = start + duration;
 }
 
-long int get_elapsed(){
-    return get_time() - start;
+long int getElapsed(){
+    return getTime() - start;
 }
+
+long int getRemaining(){
+    return end - getTime();
+}
+
+
+// podiamos usar posix timers
