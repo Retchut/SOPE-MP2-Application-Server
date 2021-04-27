@@ -1,23 +1,36 @@
-#ifndef SRC_UTILS_H_
-#define SRC_UTILS_H_
+// COPYRIGHT 2021 Flávio Lobo Vaz, José Costa, Mário Travassos, Tomás Fidalgo
+
+
+#ifndef SRC_TIMER_H_
+#define SRC_TIMER_H_
 
 /**
  * @brief Records the time the program started in in a global variable
+ * @param duration - Duration of the program run
  * @details The variable holds the time in the number of seconds since the epoch
  */
-void set_start();
+#include <stdint.h>
+void setTimer(int duration);
 
 /**
  * @brief Calculates and returns the number of elapsed seconds since the start of the program
  * @return Number of seconds since the start of the program's execution
  */
-long int get_elapsed();
+int64_t getElapsed();
 
 /**
  * @brief Returns the current time
  * @details The time comes in seconds since the epoch
  * @return The current time
  */
-long int get_time();
+int64_t getTime();
 
-#endif /* SRC_UTILS_H_ */
+
+/**
+ * @brief Returns the time reemaining in this program run
+ * @details The time comes in seconds
+ * @return The current time remaining
+ */
+int64_t getRemaining();
+
+#endif  // SRC_TIMER_H_

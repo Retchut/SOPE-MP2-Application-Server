@@ -1,4 +1,6 @@
-#include "cmd_parser.h"
+// COPYRIGHT 2021 Flávio Lobo Vaz, José Costa, Mário Travassos, Tomás Fidalgo
+
+#include "../src/cmd_parser.h"
 
 #include <stdio.h>
 #include <stdlib.h>
