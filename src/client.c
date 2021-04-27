@@ -5,7 +5,7 @@
 #include <pthread.h>  // thread functions
 #include <stdbool.h>  // bool
 #include <stdio.h>
-#include <stdlib.h>      // rand() atexit()
+#include <stdlib.h>      // rand_r() atexit()
 #include <string.h>      // snprintf() strcat()
 #include <sys/inotify.h>  // inotify funcs
 #include <sys/stat.h>    // open() mkfifo()
@@ -25,7 +25,8 @@ bool serverOpen = true;
 
 void cThreadFunc(void *taskId) {
   // Generate task load
-  int load = rand() % 9 + 1;
+  time_t seed = time(NULL);
+  int load = rand_r((unsigned int*)(&seed)) % 9 + 1;
 
   // Set message struct
   Message message, recvdMessage;
@@ -174,11 +175,12 @@ int main(int argc, char *const argv[]) {
   }
 
   atexit(&closePubFifo);
+  time_t seed = time(NULL);
 
   while (getRemaining() > 0 && serverOpen) {  // Time remaining
     // Pseudo random interval between thread creation
     int rand_numb =
-        ((rand() % 1000) * 1000);
+        ((rand_r((unsigned int *)(&seed)) % 1000) * 1000);
         // random milissecond number, from 0 ms to 1
     if (usleep(rand_numb) == -1) {
       perror("Error usleep");
