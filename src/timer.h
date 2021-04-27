@@ -1,3 +1,6 @@
+// COPYRIGHT 2021 Flávio Lobo Vaz, José Costa, Mário Travassos, Tomás Fidalgo
+
+
 #ifndef SRC_TIMER_H_
 #define SRC_TIMER_H_
 
@@ -6,20 +9,21 @@
  * @param duration - Duration of the program run
  * @details The variable holds the time in the number of seconds since the epoch
  */
+#include <stdint.h>
 void setTimer(int duration);
 
 /**
  * @brief Calculates and returns the number of elapsed seconds since the start of the program
  * @return Number of seconds since the start of the program's execution
  */
-long int getElapsed();
+int64_t getElapsed();
 
 /**
  * @brief Returns the current time
  * @details The time comes in seconds since the epoch
  * @return The current time
  */
-long int getTime();
+int64_t getTime();
 
 
 /**
@@ -27,6 +31,6 @@ long int getTime();
  * @details The time comes in seconds
  * @return The current time remaining
  */
-long int getRemaining();
+int64_t getRemaining();
 
-#endif /* SRC_TIMER_H_ */
+#endif  // SRC_TIMER_H_

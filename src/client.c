@@ -166,7 +166,7 @@ int main(int argc, char *const argv[]) {
   while (getRemaining() > 0 && pubFifoFD == -1) {
     pubFifoFD = open(fifoname, O_WRONLY | O_NONBLOCK);
     if (pubFifoFD == -1) {
-      if (errno != EACCES && errno != ENOENT) {
+      if (errno != EACCES && errno != ENOENT && errno != ENXIO) {
         perror("Error opening public fifo");
         exit(EXIT_FAILURE);
       }
