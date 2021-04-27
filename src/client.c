@@ -19,6 +19,7 @@
 
 #define FIFONAME_LEN 1000
 
+
 int pubFifoFD = -1;
 bool serverOpen = true;
 
@@ -163,7 +164,7 @@ int main(int argc, char *const argv[]) {
 
   // Open public fifo
   while (getRemaining() > 0 && pubFifoFD == -1) {
-    pubFifoFD = open(fifoname, O_WRONLY);
+    pubFifoFD = open(fifoname, O_WRONLY | O_NONBLOCK);
     if (pubFifoFD == -1) {
       if (errno != EACCES && errno != ENOENT) {
         perror("Error opening public fifo");
@@ -183,8 +184,8 @@ int main(int argc, char *const argv[]) {
       perror("Error usleep");
       exit(EXIT_FAILURE);
     }
-    if (pthread_create(&tid, &detatched, (void *)&cThreadFunc,
-                       (void *)&taskId) != 0) {
+    if (pthread_create(&tid, &detatched, (void *)(&cThreadFunc),
+                       (void *)(&taskId)) != 0) {
       perror("Error creating threads");
       exit(EXIT_FAILURE);
     }
