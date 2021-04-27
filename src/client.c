@@ -64,9 +64,7 @@ void cThreadFunc(void *taskId) {
   timeout.tv_sec = getRemaining();
   timeout.tv_usec = 0;
 
-  printf("%ld ; %d ; %d ; %d;  %ld; %d; IWANT\n", getTime(), message.rid,
-         message.tskload, message.pid, message.tid, message.tskres);
-
+  //make request
   if (write(pubFifoFD, &message, sizeof(Message)) == -1) {
     perror("Error writing to public fifo");
     if (close(privFifoFD) == -1) {
@@ -78,6 +76,10 @@ void cThreadFunc(void *taskId) {
     pthread_exit(0);
   }
 
+  printf("%ld ; %d ; %d ; %d;  %ld; %d; IWANT\n", getTime(), message.rid,
+         message.tskload, message.pid, message.tid, message.tskres);
+
+  //wait for response
   dataReady = select(privFifoFD + 1, &rfds, NULL, NULL, &timeout);
 
   if (dataReady == -1) {
@@ -92,6 +94,9 @@ void cThreadFunc(void *taskId) {
   } else if (dataReady == 0) {
     printf("%ld ; %d ; %d ; %d ; %ld ; %d ; GAVUP\n", getTime(), message.rid,
            message.tskload, message.pid, message.tid, message.tskres);
+    //mauro: ao dar timeout
+    //penso que devíamos parar esta thread, e todas as outras
+    //ou seja, verificar se getRemaining() > 0 no início das threads, maybe?
   } else {
     if (read(privFifoFD, &recvdMessage, sizeof(Message)) == -1) {
       perror("Error reading priv fifo");
@@ -104,6 +109,7 @@ void cThreadFunc(void *taskId) {
       pthread_exit(0);
     }
 
+    //parse response
     if (recvdMessage.tskres == -1) {
       printf("%ld ; %d ; %d ; %d ; %ld ; %d ; CLOSD\n", getTime(),
              recvdMessage.rid, recvdMessage.tskload, recvdMessage.pid,
@@ -152,7 +158,7 @@ int main(int argc, char *const argv[]) {
 
   pthread_t tid;
 
-  // TaskId's
+  // TaskIds
   int taskId = 0;
 
   // set start time in time.c
@@ -161,7 +167,7 @@ int main(int argc, char *const argv[]) {
   while (getRemaining() > 0 && serverOpen) { // Time remaining
     // Pseudo random interval between thread creation
     int rand_numb =
-        ((rand() % 1000) * 1000) ; // random milissecond number, from 0 ms to 1 sec Ze: maybe from 10 ms to 1 sec
+        (((rand() % 990) + 10) * 1000) ; // random milissecond number, from 10 ms to 999 ms
     if (usleep(rand_numb) == -1) {
       perror("Error usleep");
       exit(EXIT_FAILURE);
@@ -176,6 +182,8 @@ int main(int argc, char *const argv[]) {
 
   // Destroy detached threads setup 
   pthread_attr_destroy(&detatched);
+
+  //TODO: falta dar close do fifo público
 
   pthread_exit(0);
 }
