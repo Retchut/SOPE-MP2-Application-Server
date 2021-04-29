@@ -23,6 +23,14 @@
 static volatile int pubFifoFD = -1;
 static volatile bool serverOpen = true;
 
+
+
+
+/**
+ * \brief Create threads
+ * \param taskID task identifier
+ * \return 
+ */
 void cThreadFunc(void *taskId) {
   // Generate task load
   time_t seed = time(NULL);
@@ -132,6 +140,14 @@ void cThreadFunc(void *taskId) {
   pthread_exit(0);
 }
 
+
+
+
+/**
+ * \brief Close file pubFifoFD, the public chanel
+ * \param 
+ * \return 
+ */
 void closePubFifo(void) {
   if (close(pubFifoFD) == -1) {
     perror("Error closing public fifo");
