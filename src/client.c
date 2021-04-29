@@ -186,11 +186,13 @@ int main(int argc, char *const argv[]) {
         // random milissecond number, from 0 ms to 1
     if (usleep(rand_numb) == -1) {
       perror("Error usleep");
+      pthread_attr_destroy(&detatched);
       exit(EXIT_FAILURE);
     }
     if (pthread_create(&tid, &detatched, (void *)(&cThreadFunc),
                        (void *)(&taskId)) != 0) {
       perror("Error creating threads");
+      pthread_attr_destroy(&detatched);
       exit(EXIT_FAILURE);
     }
 
