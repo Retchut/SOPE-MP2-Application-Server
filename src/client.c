@@ -1,6 +1,5 @@
 // COPYRIGHT 2021 Flávio Lobo Vaz, José Costa, Mário Travassos, Tomás Fidalgo
 
-#include <cstddef>
 #include <errno.h>   // perror()
 #include <fcntl.h>   // open()
 #include <pthread.h>  // thread functions
