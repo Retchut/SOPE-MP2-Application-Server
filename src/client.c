@@ -118,7 +118,7 @@ void cThreadFunc(void *taskId) {
     } else {
       printf("%ld ; %d ; %d ; %d ; %ld ; %d ; GOTRS\n", getTime(),
              message.rid, message.tskload, message.pid,
-             message.tid, message.tskres);
+             message.tid, recvdMessage.tskres);
     }
   }
   if (close(privFifoFD) == -1) {
