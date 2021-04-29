@@ -1,5 +1,6 @@
 // COPYRIGHT 2021 Flávio Lobo Vaz, José Costa, Mário Travassos, Tomás Fidalgo
 
+#include <cstddef>
 #include <errno.h>   // perror()
 #include <fcntl.h>   // open()
 #include <pthread.h>  // thread functions
@@ -30,6 +31,8 @@ void cThreadFunc(void *taskId) {
 
   // Set message struct
   Message message, recvdMessage;
+  memset(&message, 0, sizeof(message));
+  memset(&recvdMessage, 0, sizeof(message));
   message.rid = *(int *)(taskId);
   message.tskload = load;
   message.pid = getpid();
