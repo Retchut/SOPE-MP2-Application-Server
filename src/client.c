@@ -20,8 +20,8 @@
 #define FIFONAME_LEN 1000
 
 
-int pubFifoFD = -1;
-bool serverOpen = true;
+static volatile int pubFifoFD = -1;
+static volatile bool serverOpen = true;
 
 void cThreadFunc(void *taskId) {
   // Generate task load
@@ -112,13 +112,13 @@ void cThreadFunc(void *taskId) {
     // parse response
     if (recvdMessage.tskres == -1) {
       printf("%ld ; %d ; %d ; %d ; %ld ; %d ; CLOSD\n", getTime(),
-             recvdMessage.rid, recvdMessage.tskload, recvdMessage.pid,
-             recvdMessage.tid, recvdMessage.tskres);
+             message.rid, message.tskload, message.pid,
+             message.tid, recvdMessage.tskres);
       serverOpen = false;
     } else {
       printf("%ld ; %d ; %d ; %d ; %ld ; %d ; GOTRS\n", getTime(),
-             recvdMessage.rid, recvdMessage.tskload, recvdMessage.pid,
-             recvdMessage.tid, recvdMessage.tskres);
+             message.rid, message.tskload, message.pid,
+             message.tid, message.tskres);
     }
   }
   if (close(privFifoFD) == -1) {
