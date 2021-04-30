@@ -122,13 +122,13 @@ void cThreadFunc(void *taskId) {
     // parse response
     if (recvdMessage.tskres == -1) {
       printf("%ld ; %d ; %d ; %d ; %ld ; %d ; CLOSD\n", getTime(),
-             message.rid, message.tskload, message.pid,
-             message.tid, recvdMessage.tskres);
+             recvdMessage.rid, recvdMessage.tskload, recvdMessage.pid,
+             recvdMessage.tid, recvdMessage.tskres);
       serverOpen = false;
     } else {
       printf("%ld ; %d ; %d ; %d ; %ld ; %d ; GOTRS\n", getTime(),
-             message.rid, message.tskload, message.pid,
-             message.tid, recvdMessage.tskres);
+             recvdMessage.rid, recvdMessage.tskload, recvdMessage.pid,
+             recvdMessage.tid, recvdMessage.tskres);
     }
   }
   if (close(privFifoFD) == -1) {
