@@ -20,9 +20,17 @@
 #define FIFONAME_LEN 1000
 
 
-int pubFifoFD = -1;
-bool serverOpen = true;
+static volatile int pubFifoFD = -1;
+static volatile bool serverOpen = true;
 
+
+
+
+/**
+ * \brief Create threads
+ * \param taskID task identifier
+ * \return 
+ */
 void cThreadFunc(void *taskId) {
   // Generate task load
   time_t seed = time(NULL);
@@ -30,6 +38,8 @@ void cThreadFunc(void *taskId) {
 
   // Set message struct
   Message message, recvdMessage;
+  memset(&message, 0, sizeof(message));
+  memset(&recvdMessage, 0, sizeof(message));
   message.rid = *(int *)(taskId);
   message.tskload = load;
   message.pid = getpid();
@@ -130,6 +140,14 @@ void cThreadFunc(void *taskId) {
   pthread_exit(0);
 }
 
+
+
+
+/**
+ * \brief Close file pubFifoFD, the public chanel
+ * \param 
+ * \return 
+ */
 void closePubFifo(void) {
   if (close(pubFifoFD) == -1) {
     perror("Error closing public fifo");
@@ -184,11 +202,13 @@ int main(int argc, char *const argv[]) {
         // random milissecond number, from 0 ms to 1
     if (usleep(rand_numb) == -1) {
       perror("Error usleep");
+      pthread_attr_destroy(&detatched);
       exit(EXIT_FAILURE);
     }
     if (pthread_create(&tid, &detatched, (void *)(&cThreadFunc),
                        (void *)(&taskId)) != 0) {
       perror("Error creating threads");
+      pthread_attr_destroy(&detatched);
       exit(EXIT_FAILURE);
     }
 
